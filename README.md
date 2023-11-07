@@ -1,19 +1,12 @@
-# [Skabelon til prototype-projekt](https://github.com/Kortforsyningen/template-python-prototype)
+This script takes unprocessed Sentinel-2 SAFE files and converts them to geoTiff, cut down to the extent of a shapefile provided by the user. 
 
-Af [Joachim Mortensen](https://github.com/xidus)
+Script takes:
+    Input: Path to dir with SAFE files
 
-Dette arkiv kan bruges som skabelon til et projekt i vores interne kategori **Prototype**, da det opfylder [de basale krav](https://github.com/Kortforsyningen/grf-programmel-overblik), vi stiller til et projekt i denne kategori.
+    Output: Path to output geotiff
 
-Arkivet ligger på GitHub og er her sat op med [GitHubs skabelon-funktionalitet](https://docs.github.com/en/repositories/creating-and-managing-repositories/creating-a-repository-from-a-template).
+    Shape: Path to .shp. file. If none, no clipping will be made
 
-[README-prototype.md](README-prototype.md) er et eksempel på dokumentationen til en README-fil til materialet i dete arkiv.
+    Max_cloud_pct: Maximum allowed clouds in area defined by shape (or image of on shape)
 
-
-## Bidrag til dette arkiv
-
-*   Konkrete ønsker kan oprettes som [GitHub issues](https://github.com/Kortforsyningen/template-python-prototype/issues).
-
-*   Bidrag kan oprettes gennem GitHubs forking- og pull-request-mekanisme:
-    -   På kodearkivets side, vælg Fork
-    -   Fra din egen fork, lav en by branch og foretag rettelserne i denne.
-    -   Når du er klar, kan du oprette et pull-request fra den nye branch.
+    Max_empty: Max allowed no_data pct. of outputs
