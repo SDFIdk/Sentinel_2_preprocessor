@@ -22,11 +22,6 @@ class Tiff_generator(object):
                 if os.path.isdir(os.path.join(a_dir, name))]
     
     
-
-
-
-
-            
     def generate_geotiffs(inputProductPath, outputPath):
 
         basename =  os.path.basename(inputProductPath)
@@ -108,6 +103,10 @@ class Tiff_generator(object):
 
         vrt_dataset = gdal.BuildVRT(outPutFullVrt, list(bands.values()), separate=True, resolution='user', xRes=20, yRes=20)
        
+        for i, band_name in enumerate(bands, start=1):
+            band = vrt_dataset.GetRasterBand(i)
+            band.SetMetadataItem('DESCRIPTION', band_name)
+
         gdal.Translate(outPutFullPath, vrt_dataset, format='GTiff')
 
         return(outPutFullPath)

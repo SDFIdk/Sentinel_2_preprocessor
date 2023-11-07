@@ -33,10 +33,7 @@ class Utils(object):
 
     def file_list_from_dir(directory, extension):
         file_list = glob(directory + extension)
-        if len(file_list) == 0:
-            print('## No ' + extension + ' files in input!')
-            sys.exit()
-
+        assert len(file_list) != 0, f'## No {extension} files in {directory}!'
         return file_list
     
     
@@ -61,7 +58,7 @@ class Utils(object):
         Utils.open_option_warp_move(scl_filename, options, 'tmp/clip_scl.jp2')
 
         cloud_percentage = Utils.get_cloud_percentage(scl_filename)
-
+        del(scl_filename)
         return cloud_percentage
     
 
@@ -73,7 +70,6 @@ class Utils(object):
         total_data_pixels = scl_ds.size - np.sum(np.isin(scl_ds, [0]))
 
         scl_ds = None
-
         return (cloud_pixels / total_data_pixels) * 100
 
     
@@ -82,6 +78,7 @@ class Utils(object):
             scl_file = [f for f in zip_ref.namelist() if '_SCL_20m.jp2' in f]
 
             if scl_file == None: 
+                print(f"# {inputProductPath} has no SCL band!")
                 return None
 
             scl_filename = 'tmp/' + os.path.basename(scl_file[0])
@@ -121,8 +118,14 @@ class Utils(object):
         y_res = -geotransform[5]
 
         src_SRS = gdal_dataset.GetProjection()
+        # print(src_SRS)
+        # print(x_res)
+        # print(y_res)
+        # print(crs)
 
-        options = gdal.WarpOptions(format = "GTiff", srcSRS = src_SRS, dstSRS = crs, xRes=x_res, yRes=y_res, resampleAlg=gdal.GRA_NearestNeighbour)     
+        # options = gdal.WarpOptions(format = "GTiff", srcSRS = src_SRS, dstSRS = crs, xRes=x_res, yRes=y_res, resampleAlg=gdal.GRA_NearestNeighbour)     
+        options = gdal.WarpOptions(format = "GTiff", srcSRS = src_SRS, dstSRS = crs, resampleAlg=gdal.GRA_NearestNeighbour)     
+
         gdal.Warp(output, gdal_dataset, options = options)
         shutil.move(output, dataset)
     
@@ -133,68 +136,6 @@ class Utils(object):
         gdal_dataset = gdal.Open(dataset)
         gdal.Warp(output, gdal_dataset, options = options)
         shutil.move(output, dataset)
-    
-
-    # def clip_to_256(geotiff_path, shape, tmp_dir):
-
-    #     gpd_shape = gpd.read_file(shape)
-    #     geometries = list(gpd_shape.geometry)
-    #     pad_width = 128
-
-    #     with rio.open(geotiff_path, 'r+') as src:
-
-    #         print(gpd_shape.crs)
-    #         gpd_shape = gpd_shape.to_crs(src.crs)
-
-    #         print(gpd_shape.crs)
-    #         print(src.crs)
-    #         sys.exit()
-    #         # despite best efforts to match CRS og shp and raster, it continues to claim no overlap. CRS warp on raster fail
-
-    #         buffer_clipped_rio, clipped_transform = mask(
-    #             src, 
-    #             geometries, 
-    #             crop=True, 
-    #             all_touched=True, 
-    #             filled=False, 
-    #             pad=True, 
-    #             pad_width=pad_width,
-    #             )
-            
-    #         buffer_clipped_rio = np.where(buffer_clipped_rio.mask, np.nan, buffer_clipped_rio)
-
-    #         out_meta = src.meta
-    #         out_meta.update({"driver": "GTiff",
-    #              "height": buffer_clipped_rio.shape[1],
-    #              "width": buffer_clipped_rio.shape[2],
-    #              "transform": clipped_transform,
-    #              "nodata": np.nan
-    #              })
-
-    #         with rio.open(tmp_dir + 'clipped_raster.tif', "w", **out_meta) as dest:
-    #             dest.write(buffer_clipped_rio)
-
-    #     with rio.open(tmp_dir + 'clipped_raster.tif') as src:
-
-    #         new_width = (src.width // 256) * 256
-    #         new_height = (src.height // 256) * 256
-
-    #         window = Window(0, 0, new_width, new_height)
-    #         clipped_data = src.read(window=window)
-    #         new_transform = src.window_transform(window)
-
-    #         with rio.open(tmp_dir + 'clipped_raster2.tif', 'w', 
-    #                    driver='GTiff', 
-    #                    height=new_height,
-    #                    width=new_width, 
-    #                    count=src.count,
-    #                    dtype=str(clipped_data.dtype),
-    #                    #crs=crs,
-    #                    transform=new_transform
-    #                    ) as dst:
-    #             dst.write(clipped_data)
-
-    #     shutil.move(tmp_dir + 'clipped_raster2.tif', geotiff_path)
 
 
     def remove_empty_files(geotiff, max_empty_percent):
